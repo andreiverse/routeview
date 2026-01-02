@@ -3,20 +3,24 @@ package ip
 import (
 	"log"
 	"net"
+	"strconv"
 	"strings"
 
 	"andrei.vip/routeview/app"
 )
 
-type Asn struct {
+type AS struct {
 	Net  net.IPNet
 	As   string
 	Cidr int
 }
 
-func GetAsnForIp(app *app.App, ip net.IP) *Asn {
+func (a AS) String() string {
+	return a.Net.IP.String() + "/" + strconv.Itoa(a.Cidr) + "[" + a.As + "]"
+}
 
-	var asn *Asn = nil
+func GetAsnForIp(app *app.App, ip net.IP) AS {
+	var asn *AS = nil
 
 	for _, e := range app.Asns {
 		network := e[0]
@@ -38,7 +42,7 @@ func GetAsnForIp(app *app.App, ip net.IP) *Asn {
 		log.Println("found prefix for ip " + ip.String() + ": " + net.String() + " " + strings.Join(e, ", "))
 
 		if asn == nil || asn.Cidr < cidr {
-			asn = &Asn{
+			asn = &AS{
 				Net:  *net,
 				As:   e[5],
 				Cidr: cidr,
@@ -46,5 +50,5 @@ func GetAsnForIp(app *app.App, ip net.IP) *Asn {
 		}
 	}
 
-	return asn
+	return *asn
 }
